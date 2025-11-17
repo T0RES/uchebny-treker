@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Учебный трекер - управление заданиями по предметам">
+    <meta name="theme-color" content="#6366f1">
+    <title>Учебный Трекер</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogItCj0YfQtdCx0L3Ri9C5INGC0YDQtdC60LXRgCIsCiAgInNob3J0X25hbWUiOiAi0KLRgNC10LrQtdGAIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMmUiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyUzRSUzQ3JlY3Qgd2lkdGg9JzE5MicgaGVpZ2h0PScxOTInIGZpbGw9JyM2MzY2ZjEnLyUzRSUzQy9zdmclM0UiLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgICB9CiAgXQp9">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .subjects-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .subject-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            border-color: #6366f1;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .subject-image {
+            width: 100%;
+            height: 150px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            object-fit: cover;
+        }
+
+        .subject-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subject-time {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .add-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .pin-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .pin-digit {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .pin-digit:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .file-upload-label:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .preview-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .preview-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-delete {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f87171;
+            border: 2px solid #1a1a2e;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .preview-delete:hover {
+            background: #ef4444;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .error-msg {
+            color: #f87171;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+        }
+
+        .detail-description {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .detail-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .detail-image-wrapper {
+            position: relative;
+        }
+
+        .detail-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .detail-img:hover {
+            transform: scale(1.05);
+        }
+
+        .image-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .image-viewer.active {
+            display: flex;
+        }
+
+        .image-viewer-content {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .image-viewer-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-viewer-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Учебный Трекер</h1>
+        </div>
+
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск предметов...">
+
+        <div class="subjects-grid" id="subjectsGrid">
+            <div class="loading">Загрузка...</div>
+        </div>
+    </div>
+
+    <button class="add-btn" id="addBtn">+</button>
+
+    <div class="modal" id="pinModal">
+        <div class="modal-content">
+            <div class="modal-header">Введите PIN-код</div>
+            <div class="pin-container">
+                <input type="password" maxlength="1" class="pin-digit" id="pin1">
+                <input type="password" maxlength="1" class="pin-digit" id="pin2">
+                <input type="password" maxlength="1" class="pin-digit" id="pin3">
+                <input type="password" maxlength="1" class="pin-digit" id="pin4">
+            </div>
+            <div class="error-msg" id="pinError"></div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="pinCancelBtn">Отменить</button>
+                <button class="btn btn-primary" id="pinConfirmBtn">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addSubjectModal">
+        <div class="modal-content">
+            <div class="modal-header">Добавить предмет</div>
+            <div class="form-group">
+                <label class="form-label">Название предмета</label>
+                <input type="text" class="form-input" id="subjectNameInput" placeholder="Введите название">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Фото предмета</label>
+                <label class="file-upload-label" for="subjectImageInput">📷 Загрузить фото</label>
+                <input type="file" class="file-upload-input" id="subjectImageInput" accept="image/*">
+                <div class="preview-container" id="subjectImagePreview"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="cancelSubjectBtn">Отменить</button>
+                <button class="btn btn-primary" id="saveSubjectBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header" id="detailTitle"></div>
+            <div id="detailContent"></div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="closeDetailBtn">Закрыть</button>
+                <button class="btn btn-primary" id="editTaskBtn">Редактировать</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">Редактировать задание</div>
+            <div class="form-group">
+                <label class="form-label">Описание задания</label>
+                <textarea class="form-textarea" id="taskDescInput" placeholder="Введите описание"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Фото заданий (до 3 фото)</label>
+                <label class="file-upload-label" for="taskImagesInput">📷 Загрузить фото</label>
+                <input type="file" class="file-upload-input" id="taskImagesInput" accept="image/*" multiple>
+                <div class="preview-container" id="taskImagesPreview"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="cancelTaskBtn">Отменить</button>
+                <button class="btn btn-primary" id="saveTaskBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-viewer" id="imageViewer">
+        <button class="image-viewer-close" id="closeImageViewer">×</button>
+        <img class="image-viewer-content" id="viewerImage">
+    </div>
+
+    <script>
+        // ============================================
+        // КОНФИГУРАЦИЯ SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://dqdbbnasoafhhvyesgsa.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZGJibmFzb2FmaGh2eWVzZ3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxODY3NTQsImV4cCI6MjA3Nzc2Mjc1NH0.AXyN1FRD2j4PZDByJ_-qJiPGVhf8gYetumvQs2U_b8s';
+        const PIN = '9354';
+
+        let currentAction = null;
+        let currentSubjectId = null;
+        let taskImagesData = [];
+
+        // ============================================
+        // SUPABASE API ФУНКЦИИ
+        // ============================================
+        async function supabaseRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation',
+                        ...options.headers
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                return text ? JSON.parse(text) : null;
+            } catch (error) {
+                console.error('Supabase request error:', error);
+                throw error;
+            }
+        }
+
+        async function uploadImage(file) {
+            const fileName = `${Date.now()}_${file.name}`;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/storage/v1/object/subject-images/${fileName}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        },
+                        body: formData
+                    }
+                );
+
+                if (response.ok) {
+                    return `${SUPABASE_URL}/storage/v1/object/public/subject-images/${fileName}`;
+                }
+                
+                // Если storage не настроен, используем base64
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            } catch (error) {
+                // Fallback to base64
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        // ============================================
+        // ЗАГРУЗКА И ОТОБРАЖЕНИЕ ПРЕДМЕТОВ
+        // ============================================
+        async function loadSubjects() {
+            try {
+                const subjects = await supabaseRequest('subjects?select=*&order=updated_at.desc');
+                renderSubjects(subjects || []);
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                document.getElementById('subjectsGrid').innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 64px; opacity: 0.3;">⚠️</div>
+                        <p>Ошибка подключения к базе данных</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Проверьте настройки Supabase</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderSubjects(subjects) {
+            const grid = document.getElementById('subjectsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = subjects.filter(s => s.name.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div style="font-size: 64px; opacity: 0.3;">📚</div><p>Нет предметов</p></div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(s => {
+                const timeText = formatTime(new Date(s.updated_at));
+                return `
+                    <div class="subject-card" onclick="viewSubject('${s.id}')">
+                        ${s.image_url ? `<img src="${s.image_url}" class="subject-image">` : `<div class="subject-image">📖</div>`}
+                        <div class="subject-title">${s.name}</div>
+                        <div class="subject-time">Обновлено: ${timeText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTime(date) {
+            const diff = Date.now() - date;
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (mins < 1) return 'только что';
+            if (mins < 60) return `${mins} мин. назад`;
+            if (hours < 24) return `${hours} ч. назад`;
+            return `${days} дн. назад`;
+        }
+
+        // ============================================
+        // МОДАЛЬНЫЕ ОКНА
+        // ============================================
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // ============================================
+        // PIN-КОД
+        // ============================================
+        document.getElementById('addBtn').addEventListener('click', () => {
+            currentAction = 'add';
+            openModal('pinModal');
+            document.getElementById('pin1').focus();
+        });
+
+        const pinInputs = [
+            document.getElementById('pin1'),
+            document.getElementById('pin2'),
+            document.getElementById('pin3'),
+            document.getElementById('pin4')
+        ];
+
+        pinInputs.forEach((input, i) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value && i < 3) {
+                    pinInputs[i + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                    pinInputs[i - 1].focus();
+                }
+            });
+        });
+
+        document.getElementById('pinConfirmBtn').addEventListener('click', async () => {
+            const pin = pinInputs.map(i => i.value).join('');
+            if (pin === PIN) {
+                closeModal('pinModal');
+                pinInputs.forEach(i => i.value = '');
+                document.getElementById('pinError').textContent = '';
+                
+                if (currentAction === 'add') {
+                    openModal('addSubjectModal');
+                } else if (currentAction === 'edit') {
+                    const subjects = await supabaseRequest(`subjects?id=eq.${currentSubjectId}&select=*`);
+                    const subject = subjects[0];
+                    document.getElementById('taskDescInput').value = subject.description || '';
+                    taskImagesData = subject.task_images || [];
+                    renderTaskImagesPreview();
+                    openModal('editTaskModal');
+                }
+            } else {
+                document.getElementById('pinError').textContent = 'Неверный PIN-код';
+                pinInputs.forEach(i => i.value = '');
+                pinInputs[0].focus();
+            }
+        });
+
+        document.getElementById('pinCancelBtn').addEventListener('click', () => {
+            closeModal('pinModal');
+            pinInputs.forEach(i => i.value = '');
+            document.getElementById('pinError').textContent = '';
+        });
+
+        // ============================================
+        // ДОБАВЛЕНИЕ ПРЕДМЕТА
+        // ============================================
+        document.getElementById('subjectImageInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('subjectImagePreview').innerHTML = 
+                        `<img src="${e.target.result}" class="preview-img">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('saveSubjectBtn').addEventListener('click', async () => {
+            const name = document.getElementById('subjectNameInput').value.trim();
+            if (!name) {
+                alert('Введите название предмета');
+                return;
+            }
+
+            const file = document.getElementById('subjectImageInput').files[0];
+            let imageUrl = null;
+
+            if (file) {
+                imageUrl = await uploadImage(file);
+            }
+
+            try {
+                await supabaseRequest('subjects', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name,
+                        image_url: imageUrl,
+                        description: '',
+                        task_images: []
+                    })
+                });
+
+                closeModal('addSubjectModal');
+                await loadSubjects();
+                document.getElementById('subjectNameInput').value = '';
+                document.getElementById('subjectImagePreview').innerHTML = '';
+                alert('✅ Предмет добавлен!');
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+                alert('❌ Ошибка сохранения предмета');
+            }
+        });
+
+        document.getElementById('cancelSubjectBtn').addEventListener('click', () => {
+            closeModal('addSubjectModal');
+            document.getElementById('subjectNameInput').value = '';
+            document.getElementById('subjectImagePreview').innerHTML = '';
+        });
+
+        // ============================================
+        // ПРОСМОТР ПРЕДМЕТА
+        // ============================================
+        async function viewSubject(id) {
+            try {
+                const subjects = await supabaseRequest(`subjects?id=eq.${id}&select=*`);
+                const subject = subjects[0];
+                if (!subject) return;
+
+                currentSubjectId = id;
+                document.getElementById('detailTitle').textContent = subject.name;
+
+                let html = '';
+                if (subject.description) {
+                    html += `<div class="detail-description">${subject.description}</div>`;
+                } else {
+                    html += '<p style="color: rgba(255, 255, 255, 0.5); text-align: center; padding: 40px;">Описание отсутствует</p>';
+                }
+
+                if (subject.task_images && subject.task_images.length > 0) {
+                    html += '<div class="detail-images">';
+                    subject.task_images.forEach((img) => {
+                        html += `
+                            <div class="detail-image-wrapper">
+                                <img src="${img}" class="detail-img" onclick="openImageViewer('${img}')">
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                const timeText = formatTime(new Date(subject.updated_at));
+                html += `<p style="font-size: 13px; color: rgba(255, 255, 255, 0.5); margin-top: 15px;">Обновлено: ${timeText}</p>`;
+
+                document.getElementById('detailContent').innerHTML = html;
+                openModal('detailModal');
+            } catch (error) {
+                console.error('Ошибка загрузки предмета:', error);
+            }
+        }
+
+        function openImageViewer(src) {
+            document.getElementById('viewerImage').src = src;
+            document.getElementById('imageViewer').classList.add('active');
+        }
+
+        document.getElementById('closeImageViewer').addEventListener('click', () => {
+            document.getElementById('imageViewer').classList.remove('active');
+        });
+
+        document.getElementById('imageViewer').addEventListener('click', (e) => {
+            if (e.target.id === 'imageViewer') {
+                document.getElementById('imageViewer').classList.remove('active');
+            }
+        });
+
+        document.getElementById('closeDetailBtn').addEventListener('click', () => {
+            closeModal('detailModal');
+        });
+
+        document.getElementById('editTaskBtn').addEventListener('click', () => {
+            closeModal('detailModal');
+            currentAction = 'edit';
+            openModal('pinModal');
+            document.getElementById('pin1').focus();
+        });
+
+        // ============================================
+        // РЕДАКТИРОВАНИЕ ЗАДАНИЯ
+        // ============================================
+        function renderTaskImagesPreview() {
+            const container = document.getElementById('taskImagesPreview');
+            container.innerHTML = '';
+
+            taskImagesData.forEach((img, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'preview-wrapper';
+                wrapper.innerHTML = `
+                    <img src="${img}" class="preview-img">
+                    <button class="preview-delete" onclick="removePreviewImage(${index})">×</button>
+                `;
+                container.appendChild(wrapper);
+            });
+        }
+
+        function removePreviewImage(index) {
+            taskImagesData.splice(index, 1);
+            renderTaskImagesPreview();
+        }
+
+        document.getElementById('taskImagesInput').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            if (taskImagesData.length + files.length > 3) {
+                alert('Можно загрузить максимум 3 фото');
+                e.target.value = '';
+                return;
+            }
+
+            let loadedCount = 0;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    taskImagesData.push(e.target.result);
+                    loadedCount++;
+                    
+                    if (loadedCount === files.length) {
+                        renderTaskImagesPreview();
+                        document.getElementById('taskImagesInput').value = '';
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        document.getElementById('saveTaskBtn').addEventListener('click', async () => {
+            const desc = document.getElementById('taskDescInput').value.trim();
+
+            try {
+                await supabaseRequest(`subjects?id=eq.${currentSubjectId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        description: desc,
+                        task_images: taskImagesData,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+
+                closeModal('editTaskModal');
+                await loadSubjects();
+                alert('✅ Задание сохранено!');
+
+                document.getElementById('taskDescInput').value = '';
+                taskImagesData = [];
+                renderTaskImagesPreview();
+            } catch (error) {
+                console.error('Ошибка сохранения задания:', error);
+                alert('❌ Ошибка сохранения задания');
+            }
+        });
+
+        document.getElementById('cancelTaskBtn').addEventListener('click', () => {
+            closeModal('editTaskModal');
+            document.getElementById('taskDescInput').value = '';
+            taskImagesData = [];
+            renderTaskImagesPreview();
+        });
+
+        // ============================================
+        // ПОИСК
+        // ============================================
+        document.getElementById('searchInput').addEventListener('input', async () => {
+            const subjects = await supabaseRequest('subjects?select=*&order=updated_at.desc');
+            renderSubjects(subjects || []);
+        });
+
+        // ============================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ============================================
+        loadSubjects();
+
+        // Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgKCkgPT4gc2VsZi5za2lwV2FpdGluZygpKTsKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdhY3RpdmF0ZScsICgpID0+IHNlbGYuY2xpZW50cy5jbGFpbSgpKTs=');
+        }
+    </script>
+</body>
+</html>
